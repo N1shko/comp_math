@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 class Node:
     
     
-    def __init__(self, number, borders, p, k, d, ancestor=None):
+    def __init__(self, number, borders, p, k, d, ancestor=None, multiplier=10):
         self.number = number
         self.borders = borders
         self.k = k
@@ -14,12 +14,21 @@ class Node:
         self.successors = []
         self.is_leaf = True
         self.set_grid(p)
+        self.plot_dots_num = p * multiplier
+        self.set_plot_dots(self.plot_dots_num)
     
 
     def set_grid(self, p):
         points = [np.linspace(self.borders[i][0], self.borders[i][1], p+1) for i in range(len(self.borders))]
         grid = np.meshgrid(*points)
         self.dots = np.vstack([grid[i].ravel() for i in range(len(self.borders))]).T
+
+
+    def set_plot_dots(self, p):
+        points = [np.linspace(self.borders[i][0], self.borders[i][1], p+1) for i in range(len(self.borders))]
+        grid = np.meshgrid(*points)
+        self.plot_dots = np.vstack([grid[i].ravel() for i in range(len(self.borders))]).T
+    
 
 
 class KDTree:
@@ -68,9 +77,7 @@ class KDTree:
                 self.plot_var.append([[middle, middle], [new_border_1[1][0], new_border_1[1][1]]])
             else:
                 self.plot_var.append([[new_border_1[0][0], new_border_1[0][1]], [middle, middle]])
-        # temp = []
-        # for j in range(self.m):
-        #     temp.append()
+
 
 
     def print_nodes(self):
@@ -93,8 +100,9 @@ class KDTree:
 
 
 if __name__ == "__main__":
-    tree = KDTree([[0.5, 2.5], [0.5, 2.5]], 2, 4)
+    tree = KDTree([[0.5, 2.5], [0.5, 2.5], [0.5, 2.5]], 2, 2)
     tree.separate_node(0)
+    print(tree.nodes[0].dots)
     tree.separate_node(1)
     tree.separate_node(2)
     tree.separate_node(4)
