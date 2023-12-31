@@ -29,18 +29,32 @@ def rk4_iteration(x_0, t, f, h):
     return x_0 + koef
 
 
-def lagrange_basis(i_offset, cur_values, value0_bonds, p=2, m=2):
+def lagrange_basis(i_offset, cur_values, value0_bonds, p=2, m=2, debug=False):
     res=1
     for i in range(p+1):
         for j in range(m):
             if i_offset[j] != i:
                 res *= (p*(cur_values[j]-value0_bonds[j][0])/(value0_bonds[j][1]-value0_bonds[j][0]) - i) / (i_offset[j] - i)
+                if debug:
+                    print("basis, 0: ",value0_bonds, p)
+                    print("basis, cur_values:", cur_values)
+                    print("basis: ", i, j, i_offset[j])
+                    print("chisl:", (p*(cur_values[j]-value0_bonds[j][0])))
+                    print("znam:", i_offset[j] - i)
+                    print("basis: ", (p*(cur_values[j]-value0_bonds[j][0])/(value0_bonds[j][1]-value0_bonds[j][0]) - i) / (i_offset[j] - i), "\n")
+            # else:
+            #     print("i am here", i, j, i_offset[j], cur_values)
     return res
 
 
-def lagrange_interpolant(y, cur_values, value0_bounds, p=2, m=2):
+def lagrange_interpolant(y, cur_values, value0_bounds, p=2, m=2, debug=False):
     res = 0
     for i in range(p+1):
         for j in range(p+1):
-            res += y[i*(p+1)+j] * lagrange_basis([i, j], cur_values, value0_bounds, p, m)
+            if debug:
+                print(y[i*(p+1)+j] * lagrange_basis([i, j], cur_values, value0_bounds, p, m, debug=True))
+                print(y, cur_values, y[i*(p+1)+j], [i, j])
+            res += y[i*(p+1)+j] * lagrange_basis([j, i], cur_values, value0_bounds, p, m)
+    if debug:
+        print(res)
     return res
