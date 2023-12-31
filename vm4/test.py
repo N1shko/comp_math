@@ -19,24 +19,24 @@
 
 import pandas as pd
 import numpy as np
-a = [ [1,2], [2,9], [3,7] ]
-na = np.array(a)
-print(na[:,1])
-# array([1, 2, 3])
+# a = [ [1,2], [2,9], [3,7] ]
+# na = np.array(a)
+# print(na[:,1])
+# # array([1, 2, 3])
 
-import numpy as np
-# interval = [(0, 1), (0, 1)]
-interval = [(0, 1), (0, 1), (0, 1)]
-# interval = [(0, 1), (0, 1), (0, 1), (0, 1)]
-# interval = [(0, 1), (0, 1), (0, 1), (0, 1), (0, 1)]
-p = 3
-points = [np.linspace(interval[i][0], interval[i][1], p) for i in range(len(interval))]
-grid = np.meshgrid(*points)
-dots = np.vstack([grid[i].ravel() for i in range(len(interval))]).T
+# import numpy as np
+# # interval = [(0, 1), (0, 1)]
+# interval = [(0, 1), (0, 1), (0, 1)]
+# # interval = [(0, 1), (0, 1), (0, 1), (0, 1)]
+# # interval = [(0, 1), (0, 1), (0, 1), (0, 1), (0, 1)]
+# p = 3
+# points = [np.linspace(interval[i][0], interval[i][1], p) for i in range(len(interval))]
+# grid = np.meshgrid(*points)
+# dots = np.vstack([grid[i].ravel() for i in range(len(interval))]).T
 
-print(dots)
-for i in range(len(dots)):
-    print(dots[i], "\n")
+# print(dots)
+# for i in range(len(dots)):
+#     print(dots[i], "\n")
 
 
 
@@ -69,3 +69,18 @@ for i in range(len(dots)):
     #         # #print(res1[0][1])
     #     gor_grid_x[i].append(temp_x[-1])
     #     gor_grid_y[i].append(temp_y[-1])
+
+
+    # Define the interval in each dimension
+interval = [(0, 1), (2, 3), (-1, 1)] # example interval in 3D
+
+# Define the number of dots
+p = 5
+
+# Generate a random array of p dots within the interval
+dots = np.zeros((p, len(interval)))
+for i in range(len(interval)):
+    dots[:, i] = np.random.uniform(interval[i][0], interval[i][1], p)
+
+# Print the resulting dots array
+print(dots)

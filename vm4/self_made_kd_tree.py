@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 class Node:
     
     
-    def __init__(self, number, borders, p, k, d, ancestor=None, multiplier=10):
+    def __init__(self, number, borders, p, k, d, ancestor=None, multiplier=10, random_dots_number=5):
         self.number = number
         self.borders = borders
         self.k = k
@@ -16,6 +16,9 @@ class Node:
         self.set_grid(p)
         self.plot_dots_num = p * multiplier
         self.set_plot_dots(self.plot_dots_num)
+        self.random_dots_number = random_dots_number
+        self.generate_random_dots(self.random_dots_number)
+
     
 
     def set_grid(self, p):
@@ -30,6 +33,19 @@ class Node:
         self.plot_dots = np.vstack([grid[i].ravel() for i in range(len(self.borders))]).T
     
 
+    def generate_random_dots(self, p):
+        self.random_dots = np.zeros((p, len(self.borders)))
+        for i in range(len(self.borders)):
+            self.random_dots[:, i] = np.random.uniform(self.borders[i][0], self.borders[i][1], p)
+
+    def print_dots(self):
+        print("Borders:", self.borders)
+        print("Random dots:")
+        for dot in self.random_dots:
+            print(dot)
+        print("grid dots:")
+        for dot in self.dots:
+            print(dot)
 
 class KDTree:
     plot_var = []
@@ -86,12 +102,13 @@ class KDTree:
 
 
     def plot_grid(self):
-        print(self.m)
         if self.m == 2:
             fig, ax = plt.subplots(1, 1, figsize=(10, 10))
             for i in range(len(self.plot_var)):
                 ax.plot(self.plot_var[i][0], self.plot_var[i][1], linewidth=3)
             for i in range(self.node_count):
+                for j in range(len(self.nodes[i].random_dots)):
+                    ax.scatter(self.nodes[i].random_dots[j][0], self.nodes[i].random_dots[j][1])
                 for j in range(len(self.nodes[i].dots)):
                     ax.scatter(self.nodes[i].dots[j][0], self.nodes[i].dots[j][1])
             ax.grid()
@@ -100,9 +117,8 @@ class KDTree:
 
 
 if __name__ == "__main__":
-    tree = KDTree([[0.5, 2.5], [0.5, 2.5], [0.5, 2.5]], 2, 2)
+    tree = KDTree([[0.5, 2.5], [0.5, 2.5]], 2, 4)
     tree.separate_node(0)
-    print(tree.nodes[0].dots)
     tree.separate_node(1)
     tree.separate_node(2)
     tree.separate_node(4)
