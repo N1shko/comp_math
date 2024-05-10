@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import intvalpy as ip
-from self_made_kd_tree import KDTree
-from calc_func import *
+from base_tree import KDTree
+from base_calc_func import *
 
 
 
@@ -23,13 +23,13 @@ if __name__ == '__main__':
     m = 2
     tree = KDTree([[0.5, 2.5], [0.5, 2.5]], m, p)
     f = lambda t, x: func(x)
-    t_n = 100
+    t_n = 5.0
     h = 0.5
     t_h = 0.5
     t = np.arange(0, t_n, t_h)
     n = t.size
     print(len(t))
-    fig, ax = plt.subplots(1, 1, figsize=(15, 15))
+    fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     gor_grid_x = []
     gor_grid_y = []
     max_val = []
@@ -40,7 +40,9 @@ if __name__ == '__main__':
         ttemp_y = [dot[1]]
         temp0_x = dot[0]
         temp0_y = dot[1]
+        print("wtf")
         for k in range(len(t)):
+            print("here") 
             res = rk4_iteration([temp0_x, temp0_y], t[k], f, t_h)
             ttemp_x.append(res[0])
             ttemp_y.append(res[1])
@@ -116,16 +118,6 @@ if __name__ == '__main__':
         error_y += np.abs(y_test_real[i] - y_test_interpolation[i])
     print(error_x / len(x_test_real))
     print(error_y / len(y_test_real))
-
-    # for i in range(len(x_test_real)):
-    #     print(x_test_real[i], y_test_real[i], x_test_interpolation[i],y_test_interpolation[i])
-
-    # tree.nodes[0].print_dots()
-
-
-
-    #dot = tree.nodes[0].plot_dots[100]
-
     dot = [1.6, 2.0]
     print("test test", dot)
     ttemp_x = [dot[0]]
