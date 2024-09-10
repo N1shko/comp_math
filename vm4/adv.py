@@ -29,7 +29,7 @@ def calc_interpolation():
     f = lambda t, x: func(x)
     
     tool = CalcTools()
-    t_n = 15.5
+    t_n = 25.5
     h = 0.5
     t_h = h
     t = np.arange(0, t_n, t_h, dtype = np.float64)
@@ -51,10 +51,10 @@ def calc_interpolation():
         #     tree.nodes[leaf].calculation_needed = True
         while not global_flag:
             local_flag = True
-            if t[k] == t[-1] or fl:
-                fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-                ax.grid()
-                ax.set_xlabel(f"t = {t[k]}")
+            # if t[k] == t[-1] or fl:
+            #     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+            #     ax.grid()
+            #     ax.set_xlabel(f"t = {t[k]}")
             for i in range(len(separation_candidates)):
                 tree_separate_counter+=1
                 tree.separate_node(separation_candidates[i])
@@ -103,17 +103,17 @@ def calc_interpolation():
                     #     ax.scatter(gor_grid_x, gor_grid_y, c="black")                
                 x_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
                 y_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
-                if t[k] == t[-1] or fl:
-                    for i in range(len(tree.nodes[leaf].plot_dots)):
-                        dot = tree.nodes[leaf].plot_dots[i]
-                        x_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_x, dot, tree.nodes[leaf].borders, p, m)
-                        y_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_y, dot, tree.nodes[leaf].borders, p, m)
-                    #ax.scatter(x_for_plotting, y_for_plotting, c="green", s=1)
-                    num = tree.nodes[leaf].plot_dots_num
-                    h_plot = num // (p)
-                    for i in range(0, num+1, h_plot):
-                        ax.plot(x_for_plotting[i*(num+1):(i+1)*(num+1)], y_for_plotting[i*(num+1):(i+1)*(num+1)])
-                        ax.plot(x_for_plotting[i::num+1], y_for_plotting[i::num+1])
+                # if t[k] == t[-1] or fl:
+                #     for i in range(len(tree.nodes[leaf].plot_dots)):
+                #         dot = tree.nodes[leaf].plot_dots[i]
+                #         x_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_x, dot, tree.nodes[leaf].borders, p, m)
+                #         y_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_y, dot, tree.nodes[leaf].borders, p, m)
+                #     #ax.scatter(x_for_plotting, y_for_plotting, c="green", s=1)
+                #     num = tree.nodes[leaf].plot_dots_num
+                #     h_plot = num // (p)
+                #     for i in range(0, num+1, h_plot):
+                #         ax.plot(x_for_plotting[i*(num+1):(i+1)*(num+1)], y_for_plotting[i*(num+1):(i+1)*(num+1)])
+                #         ax.plot(x_for_plotting[i::num+1], y_for_plotting[i::num+1])
 
                 x_test_real = np.zeros(len(tree.nodes[leaf].random_dots), dtype=np.float64)
                 y_test_real = np.zeros(len(tree.nodes[leaf].random_dots), dtype=np.float64)
@@ -148,8 +148,8 @@ def calc_interpolation():
             if local_flag == True:
                 print("i am here")
                 global_flag = True
-            if t[k] == t[-1] or fl:
-                plt.show()
+            # if t[k] == t[-1] or fl:
+            #     plt.show()
         for leaf in tree.leaf_list:
             tree.nodes[leaf].just_made = False
             if tree.nodes[leaf].swap_needed:

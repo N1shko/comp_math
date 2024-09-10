@@ -87,15 +87,30 @@ class CalcTools:
         res = 0
         for i in range(p+1):
             for j in range(p+1):
+
                 if debug:
                     print(y[i*(p+1)+j] * self.lagrange_basis([i, j], cur_values, value0_bounds, p, m, debug=True))
                     print(y, cur_values, y[i*(p+1)+j], [i, j])
+
                 a = self.lagrange_basis([j, i], cur_values, value0_bounds, p, m)
                 res += y[i*(p+1)+j] * a
         if debug:
             print(res)
         return res
 
+
+    def lagrange_interpolant_nd(self, y, cur_values, value0_bounds, p=2, m=2, debug=False):
+        res = 0
+        for i in range((p+1) ** m):
+            indexes = np.zeros(m)
+            j = i
+            for _ in range(m):
+                j, remainder = divmod(j, p+1)
+                indexes[_] = remainder
+            a = self.lagrange_basis(indexes, cur_values, value0_bounds, p, m)
+            res += y[i] * a
+        return res
+    
     
     def lagrange_interpolant_1d(self, y, cur_values, value0_bounds, p=2, m=2, debug=False):
         res = 0

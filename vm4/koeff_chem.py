@@ -148,9 +148,13 @@ if __name__ == '__main__':
                     x_test_real[i] = res[0]
                     y_test_real[i] = res[1]
                     z_test_real[i] = res[2]
-                    x_test_interpolation[i] = tool.lagrange_interpolant_1d(gor_grid_x, dot, tree.nodes[leaf].borders, p, m)
-                    y_test_interpolation[i] = tool.lagrange_interpolant_1d(gor_grid_y, dot, tree.nodes[leaf].borders, p, m)
-                    z_test_interpolation[i] = tool.lagrange_interpolant_1d(gor_grid_z, dot, tree.nodes[leaf].borders, p, m)
+                    
+                    x_test_interpolation[i] = tool.lagrange_interpolant_nd(gor_grid_x, dot, tree.nodes[leaf].borders, p, m)
+                    y_test_interpolation[i] = tool.lagrange_interpolant_nd(gor_grid_y, dot, tree.nodes[leaf].borders, p, m)
+                    z_test_interpolation[i] = tool.lagrange_interpolant_nd(gor_grid_z, dot, tree.nodes[leaf].borders, p, m)
+                # print(gor_grid_x)
+                # if k>2: 
+                #     exit()
                 # if t[k] == t[-1] or fl:
                 #     ax.text(gor_grid_x[0], gor_grid_y[0], f"{leaf}", fontsize=12)
 

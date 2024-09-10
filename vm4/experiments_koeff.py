@@ -5,17 +5,20 @@ from calc_func import CalcTools
 import random
 plt.rcParams.update({'font.size': 20})
 
-def func(x):
-    a = -0.9
-    b = 0.5
-    c = 0.7
-    d = -0.8
+k = 1 
+b = 0.3
+c = 0.7
+x_0 = 0.8
+y_0 = 0.6
+    
+fl = 0
+fl2 = 0
+def func(x, koeffs):
     #return np.array([-k * x[0], 2*k*x[0]])
-    return np.array([a * x[0] + b * x[0] * x[1], 
-                     c * x[1] + d * x[0] * x[1]], dtype = np.float64)
+    return np.array([-koeffs[0] * x[0] + b * x[0] * x[1], c * x[1] - koeffs[1] * x[0] * x[1]], dtype = np.float32)
 
-def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
-    f = lambda t, x: func(x)
+
+def calc_interpolation(inter, function, time_integr, h_integr, integr_eps, m, p_degree):
     
     tool = CalcTools()
 
@@ -23,28 +26,31 @@ def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
     n = t.size
     min_val = np.zeros((n, m))
     max_val = np.zeros((n, m))
-    tree = KDTree(inter, m, p_degree, f, h_integr, 2)
+    tree = KDTree(inter, m, p_degree, function, h_integr, 2)
     separation_candidates = []
-    
     for k in range(len(t)):
+        print(k)
         is_set = False
         global_flag = False
         while not global_flag:
+            print("here")
             local_flag = True
-            # if (t[k] == t[-1] or fl) and fl2:
-            #     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-            #     ax.grid()
-            #     ax.set_xlabel(f"t = {t[k]}")    
+            if (t[k] == t[-1] or fl) and fl2:
+                fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+                ax.grid()
+                ax.set_xlabel(f"t = {t[k]}")    
             for i in range(len(separation_candidates)):
                 tree.separate_node(separation_candidates[i])
             separation_candidates = []
             for leaf in tree.leaf_list:
+                # print("ok not here")
                 gor_grid_x = np.zeros(len(tree.nodes[leaf].dots), dtype=np.float64)
                 gor_grid_y = np.zeros(len(tree.nodes[leaf].dots), dtype=np.float64)
                 if tree.nodes[leaf].is_new or tree.nodes[leaf].just_made:
                     for i in range(len(tree.nodes[leaf].dots)):
                         dot = tree.nodes[leaf].dots[i]
-                        res = tool.rk4([dot[0], dot[1]], t[k], f, h_integr)
+                        print(dot)
+                        res = tool.rk4([x_0, y_0], t[k], function, h_integr, koeffs=dot)
                         tree.nodes[leaf].dots_val[i] = res.copy()
                         gor_grid_x[i] = res[0]
                         gor_grid_y[i] = res[1]
@@ -64,7 +70,8 @@ def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
                 else:
                     tree.nodes[leaf].swap_needed = True
                     for ik in range(len(tree.nodes[leaf].dots_val)):
-                        res = tool.rk4_iteration([tree.nodes[leaf].dots_val[ik][0], tree.nodes[leaf].dots_val[ik][1]], t[k], f, h_integr)
+                        dot = tree.nodes[leaf].dots[ik]
+                        res = tool.rk4_iteration([tree.nodes[leaf].dots_val[ik][0], tree.nodes[leaf].dots_val[ik][1]], t[k], function, h_integr, koeffs=dot)
                         gor_grid_x[ik] = res[0]
                         gor_grid_y[ik] = res[1]
                         tree.nodes[leaf].temp_val[ik] = res.copy()
@@ -79,18 +86,18 @@ def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
                             min_val[k][1] = min(min_val[k][1], res[1])
                             max_val[k][0] = max(max_val[k][0], res[0])
                             max_val[k][1] = max(max_val[k][1], res[1])            
-                # x_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
-                # y_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
-                # if (t[k] == t[-1] or fl) and fl2:
-                #     for i in range(len(tree.nodes[leaf].plot_dots)):
-                #         dot = tree.nodes[leaf].plot_dots[i]
-                #         x_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_x, dot, tree.nodes[leaf].borders, p_degree, m)
-                #         y_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_y, dot, tree.nodes[leaf].borders, p_degree, m)
-                #     num = tree.nodes[leaf].plot_dots_num
-                #     h_plot = num // (p_degree)
-                #     for i in range(0, num+1, h_plot):
-                #         ax.plot(x_for_plotting[i*(num+1):(i+1)*(num+1)], y_for_plotting[i*(num+1):(i+1)*(num+1)])
-                #         ax.plot(x_for_plotting[i::num+1], y_for_plotting[i::num+1])
+                x_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
+                y_for_plotting = np.zeros(len(tree.nodes[leaf].plot_dots), dtype=np.float64)
+                if (t[k] == t[-1] or fl) and fl2:
+                    for i in range(len(tree.nodes[leaf].plot_dots)):
+                        dot = tree.nodes[leaf].plot_dots[i]
+                        x_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_x, dot, tree.nodes[leaf].borders, p_degree, m)
+                        y_for_plotting[i] = tool.lagrange_interpolant_2d(gor_grid_y, dot, tree.nodes[leaf].borders, p_degree, m)
+                    num = tree.nodes[leaf].plot_dots_num
+                    h_plot = num // (p_degree)
+                    for i in range(0, num+1, h_plot):
+                        ax.plot(x_for_plotting[i*(num+1):(i+1)*(num+1)], y_for_plotting[i*(num+1):(i+1)*(num+1)])
+                        ax.plot(x_for_plotting[i::num+1], y_for_plotting[i::num+1])
 
                 x_test_real = np.zeros(len(tree.nodes[leaf].random_dots), dtype=np.float64)
                 y_test_real = np.zeros(len(tree.nodes[leaf].random_dots), dtype=np.float64)
@@ -99,7 +106,7 @@ def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
                 y_test_interpolation = np.zeros(len(tree.nodes[leaf].random_dots), dtype=np.float64)
                 for i in range(len(tree.nodes[leaf].random_dots)):
                     dot = tree.nodes[leaf].random_dots[i]
-                    res = tool.rk4([dot[0], dot[1]], t[k], f, h_integr)
+                    res = tool.rk4([x_0, y_0], t[k], function, h_integr, koeffs=dot)
                     x_test_real[i] = res[0]
                     y_test_real[i] = res[1]
                     x_test_interpolation[i] = tool.lagrange_interpolant_2d(gor_grid_x, dot, tree.nodes[leaf].borders, p_degree, m)
@@ -116,46 +123,48 @@ def calc_interpolation(inter, time_integr, h_integr, integr_eps, m, p_degree):
                     separation_candidates.append(leaf)
             if local_flag == True:
                 global_flag = True
-            # if (t[k] == t[-1] or fl) and fl2:
-            #     plt.show()
+            if (t[k] == t[-1] or fl) and fl2:
+                plt.show()
         for leaf in tree.leaf_list:
             tree.nodes[leaf].just_made = False
             if tree.nodes[leaf].swap_needed:
                 tree.nodes[leaf].dots_val = tree.nodes[leaf].temp_val.copy()
+        exit()
+        
     # tree.plot_grid()
     return t, min_val, max_val
 
 
-def optimize_intervals(start_intervals, time_integr, h_integr, integr_eps, steps=None, p_degree=3):
+def optimize_intervals(start_intervals, function, time_integr, h_integr, integr_eps, steps=None, p_degree=3):
     m = len(start_intervals)
-    t, min_val, max_val = calc_interpolation(start_intervals, time_integr, h_integr, integr_eps, m, p_degree)
-    # fig, ax = plt.subplots(2, 1, figsize=(10, 10))
-    # ax[0].grid()
-    # ax[1].grid()
-    # ax[0].set_xlabel("t")
-    # ax[1].set_xlabel("t")
-    # ax[0].set_ylabel("x")
-    # ax[1].set_ylabel("y")
-    # ax[0].plot(t, [x[0] for x in min_val], label="x_min")
-    # ax[0].plot(t, [x[0] for x in max_val], label="x_max")
-    # ax[1].plot(t, [x[1] for x in min_val], label="y_min")
-    # ax[1].plot(t, [x[1] for x in max_val], label="y_max")
-
-
-
-    # ax[0].legend()
-    # ax[1].legend()
-    # plt.show()
-    fixed_0 = (np.array([1.5, 1.5]))
+    print("am i even here")
+    t, min_val, max_val = calc_interpolation(start_intervals, function, time_integr, h_integr, integr_eps, m, p_degree)
+    print("am i even here")
+    fig, ax = plt.subplots(m, 1, figsize=(10, 10))
+    for i in range(m):
+        ax[i].grid()
+        ax[i].set_xlabel("t")
+        ax[i].set_ylabel("x")
+        ax[i].plot(t, [x[0] for x in min_val], label="x_min")
+        ax[i].plot(t, [x[0] for x in max_val], label="x_max")
+        ax[i].legend()
+    plt.show()
+    fixed_0 = (np.array([1.0, 0.7]))
     tool = CalcTools()
-    f = lambda t, x: func(x)
-    fixed_result = tool.pure_rk4(fixed_0, time_integr, f, h_integr)
+    
+    fixed_result = tool.pure_rk4([x_0, y_0], time_integr, function, h_integr, koeffs=fixed_0)
+    print("lel")
+    print(min_val, max_val, fixed_result)
     for i in range(len(fixed_result)-1):
+        print(i)
+        max_dispersion = (max_val[i][0]- min_val[i][0]) * 0.05
         while True:
             check = fixed_result[i][0] + random.uniform(-max_dispersion, max_dispersion) 
+            # print(check)
             if check >= min_val[i][0] and check <= max_val[i][0]:
                 fixed_result[i][0] = check
                 break
+        max_dispersion = (max_val[i][1]- min_val[i][1]) * 0.05
         while True:
             check = fixed_result[i][1] + random.uniform(-max_dispersion, max_dispersion) 
             if check >= min_val[i][1] and check <= max_val[i][1]:
@@ -165,6 +174,8 @@ def optimize_intervals(start_intervals, time_integr, h_integr, integr_eps, steps
     print("fixed:", fixed_result[0])
     start_sum = sum(x[1]-x[0] for x in start_intervals)
     for i in range(5,6):
+        print("am i even here")
+
         new_indices = np.linspace(start=0, stop=len(t)-1, num=i+1).astype(int)
         new_linspace = t[new_indices]
         plt.show()
@@ -194,7 +205,7 @@ def optimize_intervals(start_intervals, time_integr, h_integr, integr_eps, steps
                             steps[it][1] /= 2
                         new_interval[it][1] -= steps[it][1]
                     # print("steps before", steps)
-                    t, new_min_val, new_max_val = calc_interpolation(new_interval, time_integr, h_integr, integr_eps, m, p_degree)
+                    t, new_min_val, new_max_val = calc_interpolation(new_interval, function, time_integr, h_integr, integr_eps, m, p_degree)
                     if iterations == num_determine-1 or iterations == 0:
                         fig, ax = plt.subplots(2, 1, figsize=(10, 10))
                         # ax[0].plot(t, [x[0] for x in fixed_result], color='cornflowerblue', label=r'$x(t)$')
@@ -241,36 +252,37 @@ def optimize_intervals(start_intervals, time_integr, h_integr, integr_eps, steps
                         steps[it][k] /= 2
                         new_temp_sum_no_success = sum(x[1]-x[0] for x in new_interval)
                         if abs(new_temp_sum_no_success - prev_sum_no_success) < stop_eps or abs(new_temp_sum_no_success - prev_sum) < stop_eps:
-                            # print("here")
                             stop_flag = 1
-                            # fig, ax = plt.subplots(2, 1, figsize=(10, 10))
-                            # ax[0].plot(t, [x[0] for x in fixed_result], color='cornflowerblue', label=r'$x(t)$')
-                            # ax[1].plot(t, [x[1] for x in fixed_result], color='indigo', label=r'$y(t)$')
-                            # ax[0].grid()
-                            # ax[1].grid()
-                            # ax[0].set_xlabel("t")
-                            # ax[1].set_xlabel("t")
-                            # ax[0].set_ylabel("x")
-                            # ax[1].set_ylabel("y")
-                            # ax[0].plot(t, [x[0] for x in new_min_val], label="x_min")
-                            # ax[0].plot(t, [x[0] for x in new_max_val], label="x_max")
-                            # ax[1].plot(t, [x[1] for x in new_min_val], label="y_min")
-                            # ax[1].plot(t, [x[1] for x in new_max_val], label="y_max")
-                            # for j in range(i + 1):
-                            #     ax[0].scatter(new_linspace[j], fixed_result[new_indices[j]][0])
-                            #     ax[1].scatter(new_linspace[j], fixed_result[new_indices[j]][1])
-                            # ax[0].legend()
-                            # ax[1].legend()
-                            # plt.show()
-                    # print(result_intervals)
             if stop_flag:
-                break        
+                fig, ax = plt.subplots(2, 1, figsize=(10, 10))
+                ax[0].plot(t, [x[0] for x in fixed_result], color='cornflowerblue', label=r'$x(t)$')
+                ax[1].plot(t, [x[1] for x in fixed_result], color='indigo', label=r'$y(t)$')
+                ax[0].grid()
+                ax[1].grid()
+                ax[0].set_xlabel("t")
+                ax[1].set_xlabel("t")
+                ax[0].set_ylabel("x")
+                ax[1].set_ylabel("y")
+                ax[0].plot(t, [x[0] for x in new_min_val], label="x_min")
+                ax[0].plot(t, [x[0] for x in new_max_val], label="x_max")
+                ax[1].plot(t, [x[1] for x in new_min_val], label="y_min")
+                ax[1].plot(t, [x[1] for x in new_max_val], label="y_max")
+                for j in range(i + 1):
+                    ax[0].scatter(new_linspace[j], fixed_result[new_indices[j]][0])
+                    ax[1].scatter(new_linspace[j], fixed_result[new_indices[j]][1])
+                ax[0].legend()
+                ax[1].legend()
+                plt.show()
+                print(iterations)
+                break     
+
         print(f"result for {i+1} dots: {result_intervals}, efficency: {new_temp_sum/start_sum}")
 
 
 if __name__ == '__main__':
-    start_intervals = np.array([[0.5, 2.5], [0.5, 2.5]])
+    start_intervals = np.array([[0.9, 1.3], [0.6, 1.0]])
     steps = np.array([[0.01, 0.01], [0.01, 0.01]], dtype=np.float64)
     random.seed(0)
-    max_dispersion = 0.1
-    optimize_intervals(start_intervals, time_integr=5.5, h_integr=0.5, integr_eps=1e-3, steps=steps, p_degree=6)
+    max_dispersion = 0.05
+    f = lambda t, x, koeffs: func(x, koeffs)
+    optimize_intervals(start_intervals, function=f, time_integr=5.5, h_integr=0.5, integr_eps=1e-3, steps=steps, p_degree=4)

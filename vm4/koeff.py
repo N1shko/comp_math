@@ -9,7 +9,7 @@ k = 1
 b = 0.3
 c = 0.7
 
-fl = 0
+fl = 1
 random_dots_amount = 10
 def func(x, koeffs):
     #return np.array([-k * x[0], 2*k*x[0]])
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     x_0 = 0.8
     y_0 = 0.6
     
-    t_n = 15.5
+    t_n = 5.5
     h = 0.5
     t_h = h
     t = np.arange(0, t_n, t_h, dtype = np.float32)
@@ -35,10 +35,7 @@ if __name__ == '__main__':
 
     separation_candidates = []
     for k in range(len(t)):
-        print("3")
         global_flag = False
-        for leaf in tree.leaf_list:
-            tree.nodes[leaf].calculation_needed = True
         while not global_flag:
             local_flag = True
             if t[k] == t[-1] or fl:
